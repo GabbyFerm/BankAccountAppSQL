@@ -44,7 +44,6 @@ namespace BankAccountApp.Classes
         {
             try
             {
-                // Fetch bank account choices from the database
                 var bankAccounts = context.BankAccounts
                     .Select(b => new AccountDisplay
                     {
@@ -54,19 +53,16 @@ namespace BankAccountApp.Classes
                     })
                     .ToList();
 
-                // Use the interactive menu to choose an account
                 var selectedAccountChoice = ChooseAccount(bankAccounts, "Choose an account to deposit money into:");
 
                 if (selectedAccountChoice != null)
                 {
                     Console.WriteLine($"You selected account number {selectedAccountChoice.AccountNumber}. Proceeding with deposit.");
 
-                    // Retrieve the full account from the context
                     var account = context.BankAccounts.SingleOrDefault(b => b.AccountNumber == selectedAccountChoice.AccountNumber);
 
                     if (account != null)
                     {
-                        // Ask for deposit amount
                         decimal depositAmount = AnsiConsole.Ask<decimal>("[lightseagreen]Enter the amount to deposit:[/]");
 
                         if (depositAmount <= 0)
@@ -75,7 +71,6 @@ namespace BankAccountApp.Classes
                             return;
                         }
 
-                        // Simulate a progress bar
                         AnsiConsole.Progress()
                         .Start(ctx =>
                         {
@@ -90,9 +85,8 @@ namespace BankAccountApp.Classes
                             task.Description = "[lightseagreen]Transaction completed![/]";
                         });
 
-                        // Update the account balance
                         account.Balance += depositAmount;
-                        context.SaveChanges(); // Save changes to the database
+                        context.SaveChanges(); 
 
                         Console.WriteLine($"You have successfully deposited {depositAmount:C} into account {account.AccountType}. New balance: {account.Balance:C}.");
                     }
@@ -123,7 +117,6 @@ namespace BankAccountApp.Classes
                 })
                 .ToList();
 
-            // Use the DisplayText for user selection
             var selectedAccountWithdrawFrom = AnsiConsole.Prompt(
                 new SelectionPrompt<string>()
                     .Title("Choose an account to withdraw money from:")
@@ -132,13 +125,11 @@ namespace BankAccountApp.Classes
                     .HighlightStyle(new Style(Color.DarkTurquoise))
             );
 
-            // Find the selected account by matching the DisplayText
             var selectedAccount = accountChoices
                 .FirstOrDefault(account => account.DisplayText == selectedAccountWithdrawFrom);
 
             if (selectedAccount != null)
             {
-                // Fetch the actual account object including the balance from the database
                 var accountToWithdrawFrom = context.BankAccounts
                     .FirstOrDefault(account => account.AccountNumber == selectedAccount.AccountNumber);
 
@@ -160,7 +151,6 @@ namespace BankAccountApp.Classes
                             task.Description = "[lightseagreen]Transaction completed![/]";
                         });
 
-                    // Check if the balance is sufficient
                     if (accountToWithdrawFrom.Balance >= withdrawalAmount)
                     {
                         accountToWithdrawFrom.Balance -= withdrawalAmount;
@@ -187,21 +177,19 @@ namespace BankAccountApp.Classes
         {
             try
             {
-                // Fetch bank accounts and their display information
                 var accountChoices = context.BankAccounts
                     .Select(account => new
                     {
-                        Account = account, // Keep reference to the actual BankAccount object
-                        DisplayText = $"{account.AccountType} - {account.AccountNumber}" // Formatted display string
+                        Account = account, 
+                        DisplayText = $"{account.AccountType} - {account.AccountNumber}" 
                     })
-                    .ToList();  // Fetch data and format it in memory
+                    .ToList(); 
 
-                // Selecting account to withdraw from
                 var selectedAccountWithdrawFrom = AnsiConsole.Prompt(
                     new SelectionPrompt<string>()
                         .Title("Choose an account to withdraw money from:")
                         .PageSize(10)
-                        .AddChoices(accountChoices.Select(a => a.DisplayText).ToArray()) // Use DisplayText
+                        .AddChoices(accountChoices.Select(a => a.DisplayText).ToArray()) 
                         .HighlightStyle(new Style(Color.DarkTurquoise))
                 );
 
@@ -214,15 +202,13 @@ namespace BankAccountApp.Classes
                     return;
                 }
 
-                // Validating the transfer amount
                 decimal transferAmount = ValidateAmountInput(selectedAccountFrom.Balance);
 
-                // Selecting account to transfer to
                 var selectedAccountTransferTo = AnsiConsole.Prompt(
                     new SelectionPrompt<string>()
                         .Title("Choose the account to transfer money to:")
                         .PageSize(10)
-                        .AddChoices(accountChoices.Select(a => a.DisplayText).ToArray()) // Use DisplayText
+                        .AddChoices(accountChoices.Select(a => a.DisplayText).ToArray()) 
                         .HighlightStyle(new Style(Color.DarkTurquoise))
                 );
 
@@ -235,7 +221,6 @@ namespace BankAccountApp.Classes
                     return;
                 }
 
-                // Handling progress bar for the transaction
                 AnsiConsole.Progress()
                     .Start(ctx =>
                     {
@@ -250,11 +235,9 @@ namespace BankAccountApp.Classes
                         task.Description = "[lightseagreen]Transaction completed![/]";
                     });
 
-                // Updating account balances
                 selectedAccountFrom.Balance -= transferAmount;
                 selectedAccountTo.Balance += transferAmount;
 
-                // Creating transaction IDs and adding transaction records
                 string transactionId = "TX" + DateTime.Now.Ticks.ToString();
 
                 context.Transactions.Add(new Transaction(transactionId, DateTime.Now, "Transfer Out", transferAmount)
@@ -267,15 +250,12 @@ namespace BankAccountApp.Classes
                     BankAccountId = selectedAccountTo.AccountNumber
                 });
 
-                // Saving changes to the database
                 context.SaveChanges();
 
-                // Inform user of successful transfer
                 Console.WriteLine($"You have successfully transferred {transferAmount:C} from account {selectedAccountFrom.AccountType} to {selectedAccountTo.AccountType}.");
             }
             catch (Exception ex)
             {
-                // Log the error and show a message to the user
                 Console.WriteLine($"An error occurred: {ex.Message}");
             }
         }
@@ -283,21 +263,19 @@ namespace BankAccountApp.Classes
         {
             try
             {
-                // Fetch bank accounts and their display information
                 var accountChoices = context.BankAccounts
                     .Select(account => new
                     {
-                        Account = account, // Keep reference to the actual BankAccount object
-                        DisplayText = $"{account.AccountType} - {account.AccountNumber}" // Formatted display string
+                        Account = account, 
+                        DisplayText = $"{account.AccountType} - {account.AccountNumber}" 
                     })
-                    .ToList();  // Fetch data and format it in memory
+                    .ToList();  
 
-                // Selecting account to check balance
                 var selectedAccountChoice = AnsiConsole.Prompt(
                     new SelectionPrompt<string>()
                         .Title("Choose an account to check balance:")
                         .PageSize(10)
-                        .AddChoices(accountChoices.Select(a => a.DisplayText).ToArray()) // Use DisplayText
+                        .AddChoices(accountChoices.Select(a => a.DisplayText).ToArray()) 
                         .HighlightStyle(new Style(Color.DarkTurquoise))
                 );
 
@@ -315,13 +293,11 @@ namespace BankAccountApp.Classes
             }
             catch (Exception ex)
             {
-                // Log the error and show a message to the user
                 Console.WriteLine($"An error occurred: {ex.Message}");
             }
         }
         public static void TransferHistory(BankDbContext context)
         {
-            // Retrieve the accounts and format DisplayText using AccountDisplay
             var accountChoices = context.BankAccounts
                                 .Select(account => new AccountDisplay
                                 {
@@ -329,14 +305,12 @@ namespace BankAccountApp.Classes
                                     AccountNumber = account.AccountNumber,
                                     DisplayText = $"{account.AccountType} - {account.AccountNumber}"
                                 })
-                                .ToList(); // Execute the query and load the data into memory
+                                .ToList(); 
 
-            // Now use the formatted account choices for selection
             var selectedAccountCheckTransferHistory = ChooseAccount(accountChoices, "Choose an account to check transfer history:");
 
             if (selectedAccountCheckTransferHistory != null)
             {
-                // Simulate a progress bar, you can tweak or remove this based on your needs
                 AnsiConsole.Progress()
                 .Start(ctx =>
                 {
@@ -351,17 +325,15 @@ namespace BankAccountApp.Classes
                     task.Description = "[lightseagreen]Load complete![/]";
                 });
 
-                // Retrieve the transactions for the selected account (ensure they are up-to-date)
                 var transactions = context.Transactions
                     .Where(t => t.BankAccountId == selectedAccountCheckTransferHistory.AccountNumber)
-                    .OrderByDescending(t => t.Date) // Optional: Sort by date (newest first)
-                    .ToList(); // Fetch transactions
+                    .OrderByDescending(t => t.Date) 
+                    .ToList(); 
 
                 Console.WriteLine($"Selected Account Number: {selectedAccountCheckTransferHistory.AccountNumber}");
 
                 if (transactions.Any())
                 {
-                    // Display transactions for the selected account
                     foreach (var transaction in transactions)
                     {
                         Console.WriteLine($"Transaction: {transaction.Amount:C} | Date: {transaction.Date}");
@@ -377,7 +349,6 @@ namespace BankAccountApp.Classes
                 AnsiConsole.MarkupLine("[red]Account not found.[/]");
             }
         }
-
         public static AccountDisplay ChooseAccount(List<AccountDisplay> accountChoices, string promptMessage)
         {
             if (accountChoices == null || accountChoices.Count == 0)
@@ -401,7 +372,6 @@ namespace BankAccountApp.Classes
 
             return selectedAccount ?? throw new InvalidOperationException("Account selection failed.");
         }
-
         public static decimal ValidateAmountInput(decimal balance)
         {
             while (true)
