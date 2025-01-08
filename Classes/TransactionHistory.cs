@@ -15,7 +15,6 @@ namespace BankAccountApp.Classes
             _dbContext = dbContext;
         }
 
-        // This will fetch transactions from the database
         public IReadOnlyList<Transaction> Transactions
             => _dbContext.Transactions.Include(t => t.BankAccount).ToList();
 

@@ -9,7 +9,7 @@ namespace BankAccountApp.Classes
 {
     public class BankAccount : IAccount, ITransactionHistory
     {
-        [Key] // Mark AccountNumber as the primary key
+        [Key] 
         public int AccountNumber { get; set; }
 
         public string AccountType { get; set; }
@@ -28,7 +28,7 @@ namespace BankAccountApp.Classes
             Balance = balance;
             transactions = new List<Transaction>();
         }
-        public void Deposit(decimal amountToDeposit)  // Changed to decimal
+        public void Deposit(decimal amountToDeposit)  
         {
             if (amountToDeposit <= 0)
             {
@@ -43,7 +43,7 @@ namespace BankAccountApp.Classes
             transactions.Add(newTransaction);
             transactionCounter++;
         }
-        public void Withdraw(decimal amountToDraw)  // Changed to decimal
+        public void Withdraw(decimal amountToDraw)  
         {
             if (amountToDraw <= 0)
             {
@@ -58,7 +58,7 @@ namespace BankAccountApp.Classes
             transactions.Add(newTransaction);
             transactionCounter++;
         }
-        public void Transfer(decimal amountToTransfer, IAccount accountFrom, IAccount accountTo)  // Changed to decimal
+        public void Transfer(decimal amountToTransfer, IAccount accountFrom, IAccount accountTo)  
         {
             if (amountToTransfer <= accountFrom.Balance)
             {
